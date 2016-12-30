@@ -2,8 +2,16 @@ import React, {
     Component
 } from 'react';
 
+import {
+    Image,
+    Text,
+    View,
+    TouchableHighlight,
+    Linking
+} from 'react-native';
+
 import Svg, {
-    Circle, Text, Rect, G
+    Circle, Rect, G
 } from 'react-native-svg';
 
 import { GeoUtil } from './geoutility'
@@ -14,51 +22,51 @@ export class Radar extends Component {
         super(props);
 
         this.elements =
-            <Svg
-                id="base"
-                height={this.props.size}
-                width={this.props.size}
-                >
-                <Text
-                    x={this.props.size - 45}
-                    fontSize="20"
-                    textAnchor="middle"
-                    fill="red"
-                    fontWeight="bold"
+            <View>
+                <Svg
+                    height={this.props.size}
+                    width={this.props.size}
                     >
-                    ^
-                    </Text>
-                <Text
-                    x={this.props.size - 45}
-                    y="10"
-                    fontSize="20"
-                    textAnchor="middle"
-                    fontWeight="bold"
-                    >
-                    N
-                    </Text>
-                <Circle
-                    cx={this.props.size / 2}
-                    cy={this.props.size / 2}
-                    r={this.props.size / 2 - 3}
-                    fill="green"
-                    fillOpacity="0.38"
-                    stroke="green"
-                    strokeOpacity="0.62"
-                    />
+                    <View
+                        style={{
+                            position: "absolute"
+                        }}
+                        left={this.props.size - 45}
+                        >
+                        <Text
 
-                <Circle
-                    cx={this.props.size / 2}
-                    cy={this.props.size / 2}
-                    r="3"
-                    fill="green"
-                    fillOpacity="0.62"
-                    />
+                            >
+                            ^
+                    </Text>
+                        <Text
+                            >
+                            N
+                    </Text>
+                    </View>
+                    <Circle
+                        cx={this.props.size / 2}
+                        cy={this.props.size / 2}
+                        r={this.props.size / 2 - 3}
+                        fill="green"
+                        fillOpacity="0.38"
+                        stroke="green"
+                        strokeOpacity="0.62"
+                        />
 
+                    <Circle
+                        cx={this.props.size / 2}
+                        cy={this.props.size / 2}
+                        r="3"
+                        fill="green"
+                        fillOpacity="0.62"
+                        />
+
+                </Svg>
                 {
                     this.getMemberElements()
                 }
-            </Svg>;
+            </View>
+            ;
     }
 
     render() {
@@ -74,25 +82,52 @@ export class Radar extends Component {
                 let otherOnRadar = this.getCoordinateOnRadar(this.props.mine, other);
 
                 return (
-                    <G key={other.name}>
-                        <Rect
-                            x={otherOnRadar.x - 2}
-                            y={otherOnRadar.y - 2}
-                            width="4"
-                            height="4"
-                            stroke="red"
-                            strokeWidth="1"
-                            fill="yellow"
-                            />
-                        <Text
-                            x={otherOnRadar.x}
-                            y={otherOnRadar.y + 3}
-                            textAnchor="middle"
-                            fontSize="8"
+                    <View
+                        style={{
+                            position: "absolute"
+                        }}
+                        key={other.name}
+                        left={otherOnRadar.x - 4}
+                        top={otherOnRadar.y - 4}
+                        >
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                            }}
                             >
-                            {other.name}:{otherOnRadar.distance.toFixed(2)}km
+                            <Image
+                                source={require('./images/person.png')}
+                                style={{
+                                    resizeMode: "contain",
+                                    width: 8,
+                                    height: 8
+                                }}
+                                />
+                            <Text
+                                style={{
+                                    fontSize: 8,
+                                    textAlign: "center",
+                                    fontWeight: "bold"
+                                }}
+                                >
+                                {other.name}
+                            </Text>
+                        </View>
+
+                        <TouchableHighlight
+                            onPress={() => this.openLink("geo:0,0?q=" + other.lat + "," + other.long + "(" + other.name + ")")}
+                            >
+                            <Text
+                                style={{
+                                    fontSize: 8,
+                                    textAlign: "center",
+                                }}
+                                >
+                                {otherOnRadar.distance.toFixed(2)}km
                         </Text>
-                    </G>
+                        </TouchableHighlight>
+                    </View>
                 );
             }, this)
     }
@@ -111,5 +146,15 @@ export class Radar extends Component {
             x: ((this.props.size / 2) - (distance * Math.cos(bearing))),
             y: ((this.props.size / 2) - (distance * Math.sin(bearing)))
         }
+    }
+
+    openLink(url) {
+        Linking.canOpenURL(url).then(supported => {
+            if (!supported) {
+                console.log('Can\'t handle url: ' + url);
+            } else {
+                return Linking.openURL(url);
+            }
+        }).catch(err => console.error('An error occurred', err));
     }
 }
